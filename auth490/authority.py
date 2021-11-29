@@ -1,7 +1,7 @@
 from typing import Union
 
 from .people import Person
-from .crypto import KeyHolder, Signable, PublicKey
+from .crypto import KeyHolder, Signable, Signature, PublicKey
 
 class Authority(Signable, KeyHolder):
     __name: str
@@ -14,8 +14,29 @@ class Authority(Signable, KeyHolder):
     def name(self) -> str:
         return self.__name
 
+    def get_str_type(self) -> str:
+        return "a"
+
     def serialize(self) -> any:
-        return {"k": self.key.serialize(), "n": self.name, "s": self.signature.serialize()}
+        return {
+            "t": self.get_str_type().lower(), 
+            "k": self.key.serialize(), 
+            "n": self.name, 
+            "s": self.signature.serialize()
+        }
+
+    @classmethod
+    def deserialize(self, data: any) -> 'Authority':
+        authority = Authority(
+            name=data['n'],
+            key=PublicKey.deserialize(data['k'])
+        )
+
+        if 's' in data: 
+            signature = Signature.deserialize(data['s'])
+            authority.signature = signature
+
+        return authority
 
     def validate(self) -> bool:
         return self._validate_signature(key=self.key)
@@ -28,6 +49,9 @@ class Authority(Signable, KeyHolder):
 
     def __eq__(self, other: any) -> bool:
         if not isinstance(other, Authority): return False
+
+        if not self.signature == other.signature:
+            return False
 
         return self.key == other.key 
 
@@ -47,8 +71,32 @@ class AuthorityRequest(Signable):
     def authority(self) -> Authority:
         return self.__authority
 
+    def get_str_type(self) -> str:
+        return "ar"
+
     def serialize(self) -> any:
-        return {"r": self.requester.serialize(), "a": self.authority.serialize(), "s": self.signature.serialize()}
+        return {
+            "t": self.get_str_type().lower(), 
+            "r": self.requester.serialize(), 
+            "a": self.authority.serialize(), 
+            "s": self.signature.serialize()
+        }
+
+    @classmethod
+    def deserialize(cls, data: any) -> "AuthorityRequest":
+        requester = KeyHolder.deserialize(data["r"])
+        authority = Authority.deserialize(data["a"])
+
+        request = AuthorityRequest(
+            requester=requester,
+            authority=authority
+        )
+
+        if 's' in data:
+            signature = Signature.deserialize(data["s"])
+            request.signature = signature
+
+        return request
 
     def validate(self) -> bool:
         return self.requester.validate() and self.authority.validate() and self._validate_signature(key=self.requester.key)
@@ -75,8 +123,32 @@ class AuthorityApproval(Signable):
     def request(self) -> AuthorityRequest:
         return self.__request
 
+    def get_str_type(self) -> str:
+        return "aa"
+
     def serialize(self) -> any:
-        return {"a": self.approver.serialize(), "r": self.request.serialize(), "s": self.signature.serialize()}
+        return {
+            "t": self.get_str_type().lower(), 
+            "a": self.approver.serialize(), 
+            "r": self.request.serialize(), 
+            "s": self.signature.serialize()
+        }
+
+    @classmethod
+    def deserialize(cls, data: any) -> "AuthorityApproval":
+        approver = KeyHolder.deserialize(data["a"])
+        request = AuthorityRequest.deserialize(data["r"])
+
+        approval = AuthorityApproval(
+            approver=approver,
+            request=request
+        )
+
+        if 's' in data:
+            signature = Signature.deserialize(data["s"])
+            approval.signature = signature
+
+        return approval
 
     def validate(self) -> bool:
         return self.approver.validate() and self.request.validate() and self._validate_signature(key=self.approver.key)

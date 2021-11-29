@@ -1,0 +1,29 @@
+<html>
+    <head>
+        {% include "head.html" %}
+        <title>Auth490 | Admin</title>
+        <style>
+            .qr {
+                width: 300px;
+            }
+            .container {
+                width: 100%;
+                display: grid;
+                justify-content: center;
+            }
+            .key {
+                height: 50px;
+                resize: none;
+            }
+        </style>
+    </head>
+    <body>
+        {% include "nav.html" %}
+        <div class="container pt-4">
+            <img class="qr" src="{{ private_key.qr_uri() }}"/>
+            <br/>
+            <label for="key">Private Key:</label>
+            <textarea id="key" name="key" class="key" disabled>{{ private_key.qr_serialize() }}</textarea>
+        </div>
+    </body>
+</html>

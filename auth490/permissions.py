@@ -1,6 +1,6 @@
 from enum import Enum, auto
 from .authority import Authority
-from .crypto import Signable, KeyHolder, PublicKey
+from .crypto import Signable, KeyHolder, PublicKey, Signature
 from typing import List
 
 class PermissionType(Enum):
@@ -24,8 +24,32 @@ class PermissionRequest(Signable):
     def permissions(self) -> List[PermissionType]:
         return self.__permissions
 
+    def get_str_type(self) -> str:
+        return "pr"
+
     def serialize(self) -> any:
-        return {"r": self.requester.serialize(), "p": [permission.value for permission in self.permissions], "s": self.signature.serialize()}
+        return {
+            "t": self.get_str_type().lower(), 
+            "r": self.requester.serialize(), 
+            "p": [permission.value for permission in self.permissions], 
+            "s": self.signature.serialize()
+        }
+
+    @classmethod
+    def deserialize(cls, data: any) -> "PermissionRequest":
+        requester = KeyHolder.deserialize(data["r"])
+        permissions = [PermissionType(value) for value in data["p"]]
+
+        request = PermissionRequest(
+            requester,
+            permissions
+        )
+
+        if 's' in data:
+            signature = Signature.deserialize(data["s"])
+            request.signature = signature
+
+        return request
 
     def validate(self) -> bool:
         return self.requester.validate() and self._validate_signature(key=self.requester.key)
@@ -58,8 +82,35 @@ class PermissionApproval(Signable):
     def request(self) -> PermissionRequest:
         return self.__request
 
+    def get_str_type(self) -> str:
+        return "pa"
+
     def serialize(self) -> any:
-        return {"a": self.approver.serialize(), "p": [permission.value for permission in self.permissions], "r": self.request.serialize(), "s": self.signature.serialize()}
+        return {
+            "t": self.get_str_type().lower(), 
+            "a": self.approver.serialize(), 
+            "p": [permission.value for permission in self.permissions], 
+            "r": self.request.serialize(), 
+            "s": self.signature.serialize()
+        }
+
+    @classmethod
+    def deserialize(cls, data: any) -> "PermissionApproval":
+        approver = KeyHolder.deserialize(data["a"])
+        permissions = [PermissionType(value) for value in data["p"]]
+        request = PermissionRequest.deserialize(data["r"])
+
+        approval = PermissionApproval(
+            approver,
+            permissions,
+            request
+        )
+
+        if 's' in data:
+            signature = Signature.deserialize(data["s"])
+            approval.signature = signature
+
+        return approval
 
     def validate(self) -> bool:
         return self.approver.validate() and self.request.validate() and self._validate_signature(key=self.approver.key)

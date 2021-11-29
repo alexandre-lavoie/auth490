@@ -1,0 +1,81 @@
+<html>
+    <head>
+        {% include "client/head.html" %}
+    </head>
+    <body>
+        {% include "client/nav.html" %}
+        <div class="p-4">
+            <h5>Request</h5>
+            <br/>
+            <form method="POST" action="/client/data/request" target="_blank">
+                <label for="data_types">Data Types:</label>
+                <select id="data_types" name="data_types" multiple class="form-select">
+                    {% for data_type in DataType %}
+                        <option value="{{ data_type.value }}">{{ data_type.name }}</option>
+                    {% endfor %}
+                </select>
+                <br/>
+                <label for="challenge">Challenge:</label>
+                <input id="challenge" name="challenge" value="{{ default_challenge }}" class="form-control"/>
+                <br/>
+                <label for="requester">Requester Private Key:</label>
+                {% set label = 'requester' %}
+                {% include "client/key_select.html" %}
+                <br/>
+                <input type="submit" class="btn btn-primary" value="Request"/>
+            </form>
+            <hr/>
+            <h5>Create</h5>
+            <br/>
+            <form method="POST" action="/client/data/create" target="_blank">
+                <label for="data_type">Data Type:</label>
+                <select id="data_type" name="data_type" class="form-select">
+                    {% for data_type in DataType %}
+                        <option value="{{ data_type.value }}">{{ data_type.name }}</option>
+                    {% endfor %}
+                </select>
+                <br/>
+                <label for="value">Value:</label>
+                <input id="value" name="value" class="form-control" autocomplete="off"/>
+                <br/>
+                <label for="request">Request:</label>
+                <input id="request" name="request" class="form-control" autocomplete="off"/>
+                <br/>
+                <label for="provider">Provider Private Key:</label>
+                {% set label = 'provider' %}
+                {% include "client/key_select.html" %}
+                <br/>
+                <input type="submit" class="btn btn-primary"/>
+            </form>
+            <hr/>
+            <h5>Transfer</h5>
+            <br/>
+            <form method="POST" action="/client/data/transfer" target="_blank">
+                <label for="data">Data:</label>
+                {% set label = 'data' %}
+                {% include "client/data_select.html" %}
+                <br/>
+                <label for="request">Request:</label>
+                <input id="request" name="request" class="form-control" autocomplete="off"/>
+                <br/>
+                <label for="provider">Provider Private Key:</label>
+                {% set label = 'provider' %}
+                {% include "client/key_select.html" %}
+                <br/>
+                <input type="submit" class="btn btn-primary" value="Transfer"/>
+            </form>
+            <hr/>
+            <h5>Verify</h5>
+            <br/>
+            <form method="POST" action="/client/data/verify" target="_blank">
+                <label for="transfer">Transfer:</label>
+                <input id="transfer" name="transfer" class="form-control" autocomplete="off"/>
+                <br/>
+                <label for="request">Request:</label>
+                <input id="request" name="request" class="form-control" autocomplete="off"/>
+                <br/>
+                <input type="submit" class="btn btn-primary" value="Verify"/>
+            </form>
+        </div>
+    </body>
+</html>

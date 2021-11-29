@@ -1,0 +1,20 @@
+<html>
+    <head>
+        {% include "client/head.html" %}
+    </head>
+    <body>
+        {% include "client/nav.html" %}
+
+        <div class="p-4">
+            <form method="POST">
+                <label for="data">Data:</label>
+                <input class="form-control" id="data" name="data" autocomplete="off"/>
+                <br/>
+                <input class="btn btn-primary" type="submit"/>
+            </form>
+            {% if data %}
+            <textarea class="form-control" style="width: 100%;" disabled>{{ data }}</textarea>
+            {% endif %}
+        </div>
+    </body>
+</html>

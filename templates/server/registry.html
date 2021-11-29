@@ -1,0 +1,101 @@
+<html>
+
+<head>
+    {% include "server/head.html" %}
+    <style>
+        .table-textarea{
+            height: 300px;
+        }
+        .qr {
+            width: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    {% include "server/nav.html" %}
+    <div class="p-4">
+        <form method="POST">
+            <div class="input-group mb-3">
+                <input id="data" name="data" class="form-control" placeholder="DATA:">
+                <div class="input-group-append">
+                    <input class="btn btn-danger" type="submit"/>
+                </div>
+            </div>
+        </form>
+        <br/>
+        <h5>Active Authorities</h5>
+        <table class="table table-light table-bordered">
+            <tr>
+                <th>Public Key</th>
+                <th>Name</th>
+                <th>Data</th>
+                <th>QR</th>
+            </tr>
+            {% for approval in registry.authority_approvals %}
+            <tr>
+                <td><textarea class="table-textarea" disabled>{{ approval.request.authority.key.qr_serialize() }}</textarea></td>
+                <td>{{ approval.request.authority.name }}</td>
+                <td><textarea class="table-textarea" disabled>{{ approval.qr_serialize() }}</textarea></td>
+                <td><img class="qr" src="{{ approval.qr_uri() }}"/></td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br/>
+        <h5>Active Permissions</h5>
+        <table class="table table-light table-bordered">
+            <tr>
+                <th>Public Key</th>
+                <th>Permissions</th>
+                <th>Data</th>
+                <th>QR</th>
+            </tr>
+            {% for approval in registry.permission_approvals %}
+            <tr>
+                <td><textarea class="table-textarea" disabled>{{ approval.request.requester.key.qr_serialize() }}</textarea></td>
+                <td>{{ approval.request.permissions|map(attribute="name")|join(", ") }}</td>
+                <td><textarea class="table-textarea" disabled>{{ approval.qr_serialize() }}</textarea></td>
+                <td><img class="qr" src="{{ approval.qr_uri() }}"/></td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br/>
+        <h5>Pending Authorities</h5>
+        <table class="table table-light table-bordered">
+            <tr>
+                <th>Public Key</th>
+                <th>Name</th>
+                <th>Data</th>
+                <th>QR</th>
+            </tr>
+            {% for request in registry.authority_requests %}
+            <tr>
+                <td><textarea class="table-textarea" disabled>{{ request.authority.key.qr_serialize() }}</textarea></td>
+                <td>{{ request.authority.name }}</td>
+                <td><textarea class="table-textarea" disabled>{{ request.qr_serialize() }}</textarea></td>
+                <td><img class="qr" src="{{ request.qr_uri() }}"/></td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br/>
+        <h5>Pending Permissions</h5>
+        <table class="table table-light table-bordered">
+            <tr>
+                <th>Public Key</th>
+                <th>Permissions</th>
+                <th>Data</th>
+                <th>QR</th>
+            </tr>
+            {% for request in registry.permission_requests %}
+            <tr>
+                <td><textarea class="table-textarea" disabled>{{ request.requester.key.qr_serialize() }}</textarea></td>
+                <td>{{ request.permissions|map(attribute="name")|join(", ") }}</td>
+                <td><textarea class="table-textarea" disabled>{{ request.qr_serialize() }}</textarea></td>
+                <td><img class="qr" src="{{ request.qr_uri() }}"/></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+
+</html>

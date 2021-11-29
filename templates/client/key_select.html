@@ -1,0 +1,9 @@
+{% if wallet.private_keys|length > 0 %}
+<select id="{{ label }}" name="{{ label }}" class="form-select">
+    {% for private_key in wallet.private_keys %}
+    <option value="{{ private_key.qr_serialize() }}">Wallet {{ private_key.qr_serialize()[:32] }}</option>
+    {% endfor %}
+</select>
+{% else %}
+<input id="{{ label }}" name="{{ label }}" class="form-control" autocomplete="off"/>
+{% endif %}

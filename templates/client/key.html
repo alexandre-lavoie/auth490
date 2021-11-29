@@ -1,0 +1,33 @@
+<html>
+    <head>
+        {% include "client/head.html" %}
+        <style>
+            .qr {
+                width: 200px;
+            }
+            .container {
+                width: 100%;
+                display: grid;
+                justify-content: center;
+            }
+            .key {
+                height: 50px;
+                resize: none;
+            }
+        </style>
+    </head>
+    <body>
+        {% include "client/nav.html" %}
+        <div class="container pt-4">
+            <img class="qr" src="{{ private_key.qr_uri() }}"/>
+            <br/>
+            <label for="private_key">Private Key:</label>
+            <textarea id="private_key" name="private_key" class="key" disabled>{{ private_key.qr_serialize() }}</textarea>
+            <br/><br/>
+            <img class="qr" src="{{ private_key.public_key.qr_uri() }}"/>
+            <br/>
+            <label for="public_key">Public Key:</label>
+            <textarea id="public_key" name="public_key" class="key" disabled>{{ private_key.public_key.qr_serialize() }}</textarea>
+        </div>
+    </body>
+</html>

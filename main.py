@@ -17,7 +17,8 @@ def test():
     print("Main Authority:", auth490)
 
     registry = Registry(
-        main_authority=auth490
+        main_authority=auth490,
+        main_authority_key=auth490_private_key
     )
 
     government_private_key = PrivateKey.generate()

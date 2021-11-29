@@ -1,11 +1,30 @@
-from .crypto import KeyHolder, Signable, PublicKey
+from .crypto import KeyHolder, Signable, PublicKey, Signature
 
 class Person(Signable, KeyHolder):
     def __init__(self, key: PublicKey):
         KeyHolder.__init__(self, key=key)
 
+    def get_str_type(self) -> str:
+        return "u"
+
     def serialize(self) -> any:
-        return {"k": self.key.serialize(), "s": self.signature.serialize()}
+        return {
+            "t": self.get_str_type().lower(), 
+            "k": self.key.serialize(), 
+            "s": self.signature.serialize()
+        }
+
+    @classmethod
+    def deserialize(self, data: any) -> "Person":
+        key = PublicKey.deserialize(data["k"])
+
+        person = Person(key) 
+
+        if 's' in data:
+            signature = Signature.deserialize(data["s"])
+            person.signature = signature
+
+        return person
 
     def validate(self) -> bool:
         return self._validate_signature(key=self.key)

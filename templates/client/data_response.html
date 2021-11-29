@@ -1,0 +1,47 @@
+<html>
+    <head>
+        {% include "client/head.html" %}
+        <style>
+            .qr {
+                width: 250px;
+            }
+            .table-textarea {
+                height: 250px;
+            }
+        </style>
+    </head>
+    <body>
+        {% include "client/nav.html" %}
+
+        <div class="p-4">
+            {% if not trusted %}
+            <div class="alert alert-danger">
+                This data transfer is not trusted.
+            </div>
+            {% else %}
+            <div class="alert alert-success">
+                This data transfer is trusted.
+            </div>
+            {% endif %}
+            <table class="table table-light table-bordered">
+                <tr>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>Data</th>
+                    <th>QR</th>
+                </tr>
+                {% for data in transfer.datas %}
+                <tr>
+                    <td>{{ data.type.name }}</td>
+                    <td>{{ data.value }}</td>
+                    <td><textarea class="table-textarea" disabled>{{ data.qr_serialize() }}</textarea></td>
+                    <td><img class="qr" src="{{ data.qr_uri() }}"/></td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br/>
+            <label for="provider">Provider Public Key:</label>
+            <textarea class="form-control" name="provider" id="provider" style="height: 100px" disabled>{{ transfer.provider.key.qr_serialize() }}</textarea>
+        </div>
+    </body>
+</html>

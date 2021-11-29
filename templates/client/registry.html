@@ -1,0 +1,56 @@
+<html>
+    <head>
+        {% include "client/head.html" %}
+    </head>
+    <body>
+        {% include "client/nav.html" %}
+        <div class="p-4">
+            <h5>Authority</h5>
+            <br/>
+            <form method="POST" action="/client/registry/authority" target="_blank">
+                <label for="name">Name:</label>
+                <input id="name" name="name" class="form-control" autocomplete="off"/>
+                <br/>
+                <label for="requester">Requester Private Key:</label>
+                {% set label = 'requester' %}
+                {% include "client/key_select.html" %}
+                <br/>
+                <label for="key">Authority Private Key:</label>
+                {% set label = 'key' %}
+                {% include "client/key_select.html" %}
+                <br/>
+                <input type="submit" class="btn btn-primary"/>
+            </form>
+            <hr/>
+            <h5>Permissions</h5>
+            <br/>
+            <form method="POST" action="/client/registry/permission" target="_blank">
+                <label for="permissions">Permission Types:</label>
+                <select id="permissions" name="permissions" class="form-select" multiple>
+                    {% for permission_type in PermissionType %}
+                    <option value="{{ permission_type.value }}">{{ permission_type.name }}</option>
+                    {% endfor %}
+                </select>
+                <br/>
+                <label for="requester">Requester Private Key:</label>
+                {% set label = 'requester' %}
+                {% include "client/key_select.html" %}
+                <br/>
+                <input type="submit" class="btn btn-primary"/>
+            </form>
+            <hr/>
+            <h5>Approve</h5>
+            <br/>
+            <form method="POST" action="/client/registry/approve" target="_blank">
+                <label for="data">Data:</label>
+                <input id="data" name="data" class="form-control" autocomplete="off"/>
+                <br/>
+                <label for="approver">Approver Private Key:</label>
+                {% set label = 'approver' %}
+                {% include "client/key_select.html" %}
+                <br/>
+                <input type="submit" class="btn btn-primary" value="Approve"/>
+            </form>
+        </div>
+    </body>
+</html>
