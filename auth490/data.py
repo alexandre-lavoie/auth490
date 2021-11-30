@@ -1,5 +1,5 @@
 from .crypto import Signable, KeyHolder, PublicKey, Signature, PrivateKey
-from .payload import Request
+from .payload import Request, Payload
 from enum import Enum, auto
 from typing import List
 
@@ -75,7 +75,7 @@ class Data(Signable):
             **super().str_data()
         }
 
-class DataTransfer(Signable):
+class DataTransfer(Payload):
     __provider: KeyHolder
     __datas: List[Data]
     __challenge: str
