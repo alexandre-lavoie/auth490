@@ -34,14 +34,14 @@
                 <tr>
                     <td>{{ data.type.name }}</td>
                     <td>{{ data.value }}</td>
-                    <td><textarea class="table-textarea" disabled>{{ data.qr_serialize() }}</textarea></td>
-                    <td><img class="qr" src="{{ data.qr_uri() }}"/></td>
+                    <td><textarea class="table-textarea" disabled>{{ data.serialize() }}</textarea></td>
+                    <td><img class="qr" src="{{ data.qr_code_uri() }}"/></td>
                 </tr>
                 {% endfor %}
             </table>
             <br/>
             <label for="provider">Provider Public Key:</label>
-            <textarea class="form-control" name="provider" id="provider" style="height: 100px" disabled>{{ transfer.provider.key.qr_serialize() }}</textarea>
+            <textarea class="form-control" name="provider" id="provider" style="height: 100px" disabled>{{ transfer.provider.key.serialize() }}</textarea>
         </div>
     </body>
 </html>

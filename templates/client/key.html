@@ -19,15 +19,15 @@
     <body>
         {% include "client/nav.html" %}
         <div class="container pt-4">
-            <img class="qr" src="{{ private_key.qr_uri() }}"/>
+            <img class="qr" src="{{ private_key.qr_code_uri() }}"/>
             <br/>
             <label for="private_key">Private Key:</label>
-            <textarea id="private_key" name="private_key" class="key" disabled>{{ private_key.qr_serialize() }}</textarea>
+            <textarea id="private_key" name="private_key" class="key" disabled>{{ private_key.serialize() }}</textarea>
             <br/><br/>
-            <img class="qr" src="{{ private_key.public_key.qr_uri() }}"/>
+            <img class="qr" src="{{ private_key.public_key.qr_code_uri() }}"/>
             <br/>
             <label for="public_key">Public Key:</label>
-            <textarea id="public_key" name="public_key" class="key" disabled>{{ private_key.public_key.qr_serialize() }}</textarea>
+            <textarea id="public_key" name="public_key" class="key" disabled>{{ private_key.public_key.serialize() }}</textarea>
         </div>
     </body>
 </html>

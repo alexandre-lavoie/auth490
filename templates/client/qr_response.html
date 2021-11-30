@@ -19,10 +19,10 @@
     <body>
         {% include "client/nav.html" %}
         <div class="container pt-4">
-            <img class="qr" src="{{ data.qr_uri() }}"/>
+            <img class="qr" src="{{ data.qr_code_uri() }}"/>
             <br/>
             <label for="data">Data:</label>
-            <textarea id="data" name="data" class="key" disabled>{{ data.qr_serialize() }}</textarea>
+            <textarea id="data" name="data" class="key" disabled>{{ data.serialize() }}</textarea>
         </div>
     </body>
 </html>

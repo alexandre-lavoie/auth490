@@ -1,7 +1,7 @@
 {% if wallet.data|length > 0 %}
 <select id="{{ label }}" name="{{ label }}" class="form-select" multiple>
     {% for data in wallet.data %}
-    <option value="{{ data.qr_serialize() }}">Wallet {{ data.qr_serialize()[:32] }}</option>
+    <option value="{{ data.serialize() }}">Wallet {{ data.serialize()[:32] }}</option>
     {% endfor %}
 </select>
 {% else %}

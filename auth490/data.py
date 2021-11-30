@@ -1,4 +1,5 @@
-from .crypto import Signable, KeyHolder, PublicKey, Signature
+from .crypto import Signable, KeyHolder, PublicKey, Signature, PrivateKey
+from .payload import Request
 from enum import Enum, auto
 from typing import List
 
@@ -18,6 +19,9 @@ class Data(Signable):
         self.__value = value
         self.__type = type
 
+        if isinstance(provider.key, PrivateKey):
+            self.sign(provider)
+
     @property
     def provider(self) -> KeyHolder:
         return self.__provider
@@ -34,47 +38,42 @@ class Data(Signable):
     def type(self) -> DataType:
         return self.__type
 
-    def get_str_type(self) -> str:
+    @classmethod
+    def get_type(cls) -> str:
         return "d"
 
-    def serialize(self) -> any:
+    def raw_serialize(self) -> dict:
         return {
-            "t": self.get_str_type().lower(), 
-            "p": self.provider.serialize(), 
-            "r": self.recipient.serialize(), 
+            **super().raw_serialize(),
+            "p": self.provider.raw_serialize(), 
+            "r": self.recipient.raw_serialize(), 
             "v": self.value, 
-            "d": self.type.value, 
-            "s": self.signature.serialize()
+            "d": self.type.value
         }
 
     @classmethod
-    def deserialize(self, data: any) -> "Data":
-        provider = KeyHolder.deserialize(data["p"])
-        recipient = KeyHolder.deserialize(data["r"])
-        value = data["v"]
-        data_type = DataType(data["d"])
-
+    def raw_deserialize(self, data: dict) -> "Data":
         _data = Data(
-            provider,
-            recipient,
-            value,
-            data_type
+            provider=KeyHolder.raw_deserialize(data["p"]),
+            recipient=KeyHolder.raw_deserialize(data["r"]),
+            value=data["v"],
+            type=DataType(data["d"])
         )
-
-        if 's' in data:
-            signature = Signature.deserialize(data["s"])
-            _data.signature = signature
+        _data.try_add_sign(data)
 
         return _data
 
     def validate(self) -> bool:
-        return self._validate_signature(key=self.provider.key)
+        return self._validate_signature(key=self.provider.key) and super().validate()
 
-    def __str__(self) -> str:
-        return f"Data(type={self.type.name}, value={self.value}, recipient={self.recipient}, provider={self.provider}, valid={self.validate()})"
-
-    def __repr__(self) -> str:
-        return str(self)
+    def str_data(self) -> dict:
+        return {
+            "type": self.type.name,
+            "value": self.value,
+            "recipient": self.recipient,
+            "provider": self.provider,
+            **super().str_data()
+        }
 
 class DataTransfer(Signable):
     __provider: KeyHolder
@@ -98,58 +97,50 @@ class DataTransfer(Signable):
     def challenge(self) -> bytes:
         return self.__challenge
 
-    def get_str_type(self) -> str:
+    @classmethod
+    def get_type(cls) -> str:
         return "dt"
 
-    def serialize(self) -> any:
+    def raw_serialize(self) -> dict:
         return {
-            "t": self.get_str_type().lower(), 
-            "p": self.provider.serialize(), 
-            "d": [data.serialize() for data in self.datas], 
-            "c": self.challenge, 
-            "s": self.signature.serialize()
+            **super().raw_serialize(),
+            "p": self.provider.raw_serialize(), 
+            "d": [data.raw_serialize() for data in self.datas], 
+            "c": self.challenge
         }
 
     @classmethod
-    def deserialize(self, data: any) -> "DataTransfer":
-        provider = KeyHolder.deserialize(data["p"])
-        datas = [Data.deserialize(d) for d in data["d"]]
-        challenge = data["c"]
-
+    def raw_deserialize(cls, data: dict) -> "DataTransfer":
         data_transfer = DataTransfer(
-            provider,
-            datas,
-            challenge
+            provider=KeyHolder.raw_deserialize(data["p"]),
+            datas=[Data.raw_deserialize(d) for d in data["d"]],
+            challenge=data["c"]
         )
-
-        if 's' in data:
-            siganture = Signature.deserialize(data["s"])
-            data_transfer.signature = siganture
+        data_transfer.try_add_sign(data)
 
         return data_transfer
 
     def validate(self) -> bool:
         return self.provider.validate() and all(data.validate() for data in self.datas) and self._validate_signature(key=self.provider.key)
 
-    def __str__(self) -> str:
-        return f"DataTransfer(provider={self.provider}, datas={self.datas}, challenge={self.challenge}, valid={self.validate()})"
+    def str_data(self) -> dict:
+        return {
+            "challenge": self.challenge,
+            **super().str_data()
+        }
 
-    def __repr__(self) -> str:
-        return str(self)
-
-class DataRequest(Signable):
+class DataRequest(Request):
     __requester: KeyHolder
     __types: List[DataType]
     __challenge: bytes
 
     def __init__(self, requester: KeyHolder, types: List[DataType], challenge: bytes = None):
-        self.__requester = requester
         self.__types = types
         self.__challenge = challenge
+        Request.__init__(self, requester)
 
-    @property
-    def requester(self) -> KeyHolder:
-        return self.__requester
+    def get_value(self) -> List[DataType]:
+        return self.__types
 
     @property
     def types(self) -> List[DataType]:
@@ -159,41 +150,29 @@ class DataRequest(Signable):
     def challenge(self) -> bytes:
         return self.__challenge
 
-    def get_str_type(self) -> str:
+    @classmethod
+    def get_type(cls) -> str:
         return "dr"
 
-    def serialize(self) -> any:
+    def raw_serialize(self) -> dict:
         return {
-            "t": self.get_str_type().lower(), 
-            "r": self.requester.serialize(), 
-            "d": [type.value for type in self.types], 
-            "c": self.challenge, 
-            "s": self.signature.serialize()
+            **super().raw_serialize(),
+            "c": self.challenge
         }
 
     @classmethod
-    def deserialize(self, data: any) -> "DataRequest":
-        requester = KeyHolder.deserialize(data["r"])
-        data_types = [DataType(d) for d in data["d"]]
-        challenge = data["c"]
-
+    def raw_deserialize(self, data: dict) -> "DataRequest":
         data_request = DataRequest(
-            requester,
-            data_types,
-            challenge
+            requester=KeyHolder.raw_deserialize(data["r"]),
+            types=[DataType(d) for d in data["d"]],
+            challenge=data["c"]
         ) 
-
-        if 's' in data:
-            signature = Signature.deserialize(data["s"])
-            data_request.signature = signature
+        data_request.try_add_sign(data)
 
         return data_request
 
-    def validate(self) -> bool:
-        return self.requester.validate() and self._validate_signature(key=self.requester.key)
-
-    def __str__(self) -> str:
-        return f"DataRequest(requester={self.requester}, types={[type.name for type in self.types]}, challenge={self.challenge}, valid={self.validate()})"
-
-    def __repr__(self) -> str:
-        return str(self)
+    def str_data(self) -> dict:
+        return {
+            "challenge": self.challenge,
+            **super().str_data()
+        }

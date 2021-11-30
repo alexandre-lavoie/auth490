@@ -13,7 +13,7 @@
     <body>
         {% include "client/nav.html" %}
         <div class="p-4">
-            <form method="POST">
+            <form method="POST" action="/client/wallet">
                 <div class="input-group mb-3">
                     <input id="data" name="data" class="form-control" placeholder="DATA:" autocomplete="off" />
                     <div class="input-group-append">
@@ -32,8 +32,8 @@
                 {% for data in wallet.values %}
                 <tr>
                     <td><textarea class="table-textarea" disabled>{{ data }}</textarea></td>
-                    <td><textarea class="table-textarea" disabled>{{ data.qr_serialize() }}</textarea></td>
-                    <td><img class="qr" src="{{ data.qr_uri() }}"/></td>
+                    <td><textarea class="table-textarea" disabled>{{ data.serialize() }}</textarea></td>
+                    <td><img class="qr" src="{{ data.qr_code_uri() }}"/></td>
                     <td>
                         <form method="POST" action="/client/wallet/delete/{{ loop.index0 }}" class="d-flex justify-content-center pt-4">
                             <button class="btn btn-danger">Delete</button>

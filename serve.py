@@ -1,11 +1,5 @@
 from flask import Flask, request, render_template, Response
-from auth490 import Authority, Registry, PrivateKey, PublicKey, Person
-from auth490.crypto import KeyHolder
-from auth490.serialize import deserialize
-from auth490.authority import AuthorityRequest, AuthorityApproval
-from auth490.permissions import PermissionRequest, PermissionType, PermissionApproval
-from auth490.data import DataType, DataRequest, Data, DataTransfer
-from auth490.wallet import Wallet
+from auth490 import *
 import qrcode
 import base64
 import os.path
@@ -16,18 +10,15 @@ app = Flask(__name__)
 
 if os.path.exists(".pk"):
     with open(".pk") as h:
-        main_authority_key = PrivateKey.qr_deserialize(h.read())
+        main_authority_key = PrivateKey.deserialize(h.read())
 else:
     main_authority_key = PrivateKey.generate()
 
-main_authority = Authority(
-    name="Auth490", 
-    key=main_authority_key.public_key
-)
-main_authority.sign(main_authority_key)
 registry = Registry(
-    main_authority=main_authority,
-    main_authority_key=main_authority_key
+    main_authority=Authority(
+        name="Auth490", 
+        key=main_authority_key
+    )
 )
 
 def get_key_holder(key: Union[PrivateKey, PublicKey]) -> KeyHolder:
@@ -43,10 +34,7 @@ def get_key_holder(key: Union[PrivateKey, PublicKey]) -> KeyHolder:
     if not isinstance(key, PrivateKey):
         raise Exception("Cannot get key holder with this key.")
 
-    person = Person(key.public_key)
-    person.sign(key)
-
-    return person
+    return Individual(key)
 
 @app.route("/")
 def main_home():
@@ -62,9 +50,7 @@ def server_home():
 
 @app.route("/client/key")
 def client_key():
-    private_key = PrivateKey.generate()
-
-    return render_template("client/key.html", private_key=private_key)
+    return render_template("client/key.html", private_key=RSAPrivateKey.generate())
 
 @app.route("/client/view", methods=["GET", "POST"])
 def client_view():
@@ -82,16 +68,7 @@ def server_registry():
 def server_registry_post():
     data = deserialize(request.form["data"])
 
-    if isinstance(data, AuthorityRequest):
-        registry.request_authority(data)
-    elif isinstance(data, PermissionRequest):
-        registry.request_permission(data)
-    elif isinstance(data, AuthorityApproval):
-        registry.approve_authority(data)
-    elif isinstance(data, PermissionApproval):
-        registry.approve_permissions(data)
-    else:
-        raise Exception("Unimplemented registry for " + str(data))
+    registry.insert(data)
 
     return render_template("server/registry.html", registry=registry)
 
@@ -113,14 +90,10 @@ def client_registry_authority():
 
     requester_key = deserialize(request.form["requester"])
     requester = get_key_holder(requester_key)
-
-    authority_key = deserialize(request.form["key"])
     authority = Authority(
         name,
-        authority_key.public_key
+        deserialize(request.form["key"])
     )
-    authority.sign(authority_key)
-
     authority_request = AuthorityRequest(
         requester,
         authority
@@ -164,7 +137,6 @@ def client_registry_approve():
         )
     else:
         raise Exception("Unimplemented approval for " + str(data))
-
     approval.sign(approver_key)
 
     return render_template("client/qr_response.html", data=approval)
@@ -181,7 +153,7 @@ def client_wallet():
 def client_wallet_post():
     data = deserialize(request.form["data"])
 
-    request.wallet.add(data)
+    request.wallet.insert(data)
 
     return render_template("client/wallet.html", wallet=request.wallet)
 
@@ -195,9 +167,7 @@ def client_wallet_delete(index):
 def client_data_request():
     requester_key = deserialize(request.form["requester"])
     requester = get_key_holder(requester_key)
-
     data_types = [DataType(int(dt)) for dt in request.form.getlist("data_types")]
-
     challenge = request.form["challenge"]
 
     data_request = DataRequest(

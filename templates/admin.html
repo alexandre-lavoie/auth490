@@ -20,10 +20,10 @@
     <body>
         {% include "nav.html" %}
         <div class="container pt-4">
-            <img class="qr" src="{{ private_key.qr_uri() }}"/>
+            <img class="qr" src="{{ private_key.qr_code_uri() }}"/>
             <br/>
             <label for="key">Private Key:</label>
-            <textarea id="key" name="key" class="key" disabled>{{ private_key.qr_serialize() }}</textarea>
+            <textarea id="key" name="key" class="key" disabled>{{ private_key.serialize() }}</textarea>
         </div>
     </body>
 </html>

@@ -34,10 +34,10 @@
             </tr>
             {% for approval in registry.authority_approvals %}
             <tr>
-                <td><textarea class="table-textarea" disabled>{{ approval.request.authority.key.qr_serialize() }}</textarea></td>
-                <td>{{ approval.request.authority.name }}</td>
-                <td><textarea class="table-textarea" disabled>{{ approval.qr_serialize() }}</textarea></td>
-                <td><img class="qr" src="{{ approval.qr_uri() }}"/></td>
+                <td><textarea class="table-textarea" disabled>{{ approval.get_request().authority.key.serialize() }}</textarea></td>
+                <td>{{ approval.get_request().authority.name }}</td>
+                <td><textarea class="table-textarea" disabled>{{ approval.serialize() }}</textarea></td>
+                <td><img class="qr" src="{{ approval.qr_code_uri() }}"/></td>
             </tr>
             {% endfor %}
         </table>
@@ -52,10 +52,10 @@
             </tr>
             {% for approval in registry.permission_approvals %}
             <tr>
-                <td><textarea class="table-textarea" disabled>{{ approval.request.requester.key.qr_serialize() }}</textarea></td>
-                <td>{{ approval.request.permissions|map(attribute="name")|join(", ") }}</td>
-                <td><textarea class="table-textarea" disabled>{{ approval.qr_serialize() }}</textarea></td>
-                <td><img class="qr" src="{{ approval.qr_uri() }}"/></td>
+                <td><textarea class="table-textarea" disabled>{{ approval.get_request().requester.key.serialize() }}</textarea></td>
+                <td>{{ approval.get_request().permissions|map(attribute="name")|join(", ") }}</td>
+                <td><textarea class="table-textarea" disabled>{{ approval.serialize() }}</textarea></td>
+                <td><img class="qr" src="{{ approval.qr_code_uri() }}"/></td>
             </tr>
             {% endfor %}
         </table>
@@ -70,10 +70,10 @@
             </tr>
             {% for request in registry.authority_requests %}
             <tr>
-                <td><textarea class="table-textarea" disabled>{{ request.authority.key.qr_serialize() }}</textarea></td>
+                <td><textarea class="table-textarea" disabled>{{ request.authority.key.serialize() }}</textarea></td>
                 <td>{{ request.authority.name }}</td>
-                <td><textarea class="table-textarea" disabled>{{ request.qr_serialize() }}</textarea></td>
-                <td><img class="qr" src="{{ request.qr_uri() }}"/></td>
+                <td><textarea class="table-textarea" disabled>{{ request.serialize() }}</textarea></td>
+                <td><img class="qr" src="{{ request.qr_code_uri() }}"/></td>
             </tr>
             {% endfor %}
         </table>
@@ -88,10 +88,10 @@
             </tr>
             {% for request in registry.permission_requests %}
             <tr>
-                <td><textarea class="table-textarea" disabled>{{ request.requester.key.qr_serialize() }}</textarea></td>
+                <td><textarea class="table-textarea" disabled>{{ request.requester.key.serialize() }}</textarea></td>
                 <td>{{ request.permissions|map(attribute="name")|join(", ") }}</td>
-                <td><textarea class="table-textarea" disabled>{{ request.qr_serialize() }}</textarea></td>
-                <td><img class="qr" src="{{ request.qr_uri() }}"/></td>
+                <td><textarea class="table-textarea" disabled>{{ request.serialize() }}</textarea></td>
+                <td><img class="qr" src="{{ request.qr_code_uri() }}"/></td>
             </tr>
             {% endfor %}
         </table>

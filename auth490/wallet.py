@@ -1,11 +1,11 @@
-from auth490.serialize import Serializable, deserialize
-from auth490.crypto import PrivateKey
-from auth490.data import Data
+from .serialize import Serializable, deserialize
+from .crypto import PrivateKey, PublicKey, Signable
+from .data import Data
 from typing import List
 from flask import Request, Response
 import base64
 
-class Wallet:
+class Wallet(Signable):
     __data: List[Serializable]
 
     def __init__(self, data: List[Serializable] = None):
@@ -14,8 +14,31 @@ class Wallet:
         else:
             self.__data = []
 
-    def add(self, data: Serializable):
-        if not isinstance(data, PrivateKey) or not isinstance(data, Data):
+    @classmethod
+    def get_type(self) -> str:
+        return "w"
+
+    def raw_serialize(self) -> dict:
+        return {
+            **super().raw_serialize(),
+            "d": [d.serialize() for d in self.__data]
+        }
+
+    @classmethod
+    def raw_deserialize(self, data: dict) -> "Wallet":
+        wallet = Wallet(
+            data=[deserialize(d) for d in data["d"]]
+        )
+        wallet.try_add_sign(data)
+
+        return wallet
+
+    def validate(self) -> bool:
+        # TODO: Sign wallet?
+        return True
+
+    def insert(self, data: Serializable):
+        if not isinstance(data, PrivateKey) and not isinstance(data, PublicKey) and not isinstance(data, Data):
             raise Exception("Cannot store class to wallet.")
 
         self.__data.append(data)
@@ -40,17 +63,15 @@ class Wallet:
         if not "wallet" in request.cookies or len(request.cookies["wallet"].strip()) == 0:
             return Wallet()
 
-        b64_data = request.cookies["wallet"]
-        str_data = base64.urlsafe_b64decode(b64_data.encode()).decode().split(",")
-        data = [deserialize(sd) for sd in str_data]
+        return Wallet.deserialize(request.cookies["wallet"])
 
-        return Wallet(data)
-
-    def dump(self, response: Response):
-        qr_data = [d.qr_serialize() for d in self.__data]
-        data = ','.join(qr_data)
-        cookie = base64.urlsafe_b64encode(data.encode()).decode()
-
-        response.set_cookie(f"wallet", cookie)
+    def dump(self, response: Response) -> Response:
+        response.set_cookie(f"wallet", self.serialize())
 
         return response
+
+    def str_data(self) -> dict:
+        return {
+            "data": self.__data,
+            **super().str_data()
+        }
