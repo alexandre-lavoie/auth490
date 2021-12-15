@@ -64,11 +64,16 @@ class Key(Serializable, Validator, ABC):
     def raw_serialize(self) -> dict:
         return self.to_b64()
 
+    @property
+    @abstractmethod
+    def public_key(self) -> "PublicKey":
+        pass
+
     def __eq__(self, other: any) -> bool:
-        if not isinstance(other, self.__class__): 
+        if not isinstance(other.public_key, self.public_key.__class__): 
             return False
 
-        return self.to_b64() == other.to_b64()
+        return self.public_key.to_b64() == other.public_key.to_b64()
 
 class PublicKey(Key, ABC):
     @classmethod
@@ -139,11 +144,6 @@ class PrivateKey(Key, Signer, ABC):
     def raw_deserialize(cls, data: dict) -> "PrivateKey":
         # TODO: Check key type.
         return RSAPrivateKey.raw_deserialize(data)
-
-    @property
-    @abstractmethod
-    def public_key(self) -> "PublicKey":
-        pass
 
     def get_validate(self, data: bytes, signature: Signature) -> bool:
         return self.public_key.get_validate(data, signature)

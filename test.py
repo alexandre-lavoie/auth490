@@ -30,6 +30,7 @@ def test():
         approver=auth490,
         request=government_request
     )
+    government_approval.sign(auth490)
     print("Government Approval:", government_approval)
     registry.insert(government_approval)
 
@@ -70,8 +71,18 @@ def test():
         type=DataType.VACCINE,
         value="PFIZER"
     )
-    print(deserialize(individual_vaccine.raw_serialize()))
+    print(deserialize(individual_vaccine.serialize()))
     print("Individual Data:", [individual_name, individual_vaccine])
+
+    transfer = DataTransfer(
+        provider=individual, 
+        datas=[individual_name, individual_vaccine], 
+        challenge="TEST"
+    )
+    transfer.sign(individual)
+    print("Transfer:", transfer)
+    print("Data Length:", len(transfer.serialize()), "/", "7089")
+
 
 if __name__ == "__main__":
     test()
