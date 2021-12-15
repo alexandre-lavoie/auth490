@@ -30,7 +30,6 @@ def test():
         approver=auth490,
         request=government_request
     )
-    government_approval.sign(auth490)
     print("Government Approval:", government_approval)
     registry.insert(government_approval)
 
