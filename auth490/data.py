@@ -157,6 +157,7 @@ class DataRequest(Request):
     def raw_serialize(self) -> dict:
         return {
             **super().raw_serialize(),
+            "d": [t.value for t in self.__types],
             "c": self.challenge
         }
 
